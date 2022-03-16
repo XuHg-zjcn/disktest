@@ -1,6 +1,6 @@
 CC=gcc
 LD=gcc
-CFLAGS = -Wall -std=gnu99
+CFLAGS = -Wall -std=gnu99 -O3
 LDFLAGS = -std=gnu99
 
 INCS = -Iinclude

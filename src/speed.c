@@ -8,10 +8,11 @@
 
 #include "config.h"
 #include "speed.h"
+#include "xorshift.h"
 
 extern uint8_t buff[BUFF_SIZE];
 
-int64_t write_rand(FILE *fp, int Nblock)
+int64_t write_rand_lib(FILE *fp, int Nblock)
 {
 	unsigned int seed;
 	struct timespec ts1, ts2;
@@ -28,6 +29,23 @@ int64_t write_rand(FILE *fp, int Nblock)
 			((uint16_t *)buff)[i] = rand()&0xffff;
 		}
 #endif
+		fwrite(buff, 1, BUFF_SIZE, fp);
+	}
+	fflush(fp);
+	clock_gettime(CLOCK_MONOTONIC, &ts2);
+	return (ts2.tv_nsec-ts1.tv_nsec) + (ts2.tv_sec-ts1.tv_sec)*1000000000;
+}
+
+int64_t write_rand_xor(FILE *fp, int Nblock)
+{
+	prng_state prng;
+	struct timespec ts1, ts2;
+	syscall(SYS_getrandom, &prng.state, sizeof(prng.state), 0);
+	clock_gettime(CLOCK_MONOTONIC, &ts1);
+	while(Nblock--){
+		for(int i=0;i<BUFF_SIZE/8;i++){
+			((uint64_t *)buff)[i] = prng_u64(&prng);
+		}
 		fwrite(buff, 1, BUFF_SIZE, fp);
 	}
 	fflush(fp);

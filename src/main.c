@@ -18,6 +18,6 @@ int main(int argc, char **argv)
 	}
 	int block=atoi(argv[2]);
 	fp = fopen(argv[1], "wb");
-	int64_t ns = write_rand(fp, block);
-	printf("%ldns, %lf\n", ns, (double)block*BUFF_SIZE/ns);
+	int64_t ns = write_rand_xor(fp, block);
+	printf("%ldns, %lfMB/s\n", ns, (double)block*BUFF_SIZE/ns*1000);
 }
