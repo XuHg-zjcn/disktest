@@ -15,7 +15,7 @@ obj/%.o: %.c
 
 all: $(OBJF)
 	@mkdir -p bin
-	$(LD) $(LDFLAGS) -o obj/main $^
+	$(LD) $(LDFLAGS) -o bin/main $^
 
 clean:
 	rm -rf obj
