@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
-#include <sys/syscall.h>
+#include <sys/random.h>
 
 #include "config.h"
 #include "speed.h"
@@ -16,7 +16,7 @@ int64_t write_rand_lib(FILE *fp, int Nblock)
 {
 	unsigned int seed;
 	struct timespec ts1, ts2;
-	syscall(SYS_getrandom, &seed, sizeof(seed), 0);
+	getrandom(&seed, sizeof(seed), 0);
 	srand(seed);
 	clock_gettime(CLOCK_MONOTONIC, &ts1);
 	while(Nblock--){
@@ -40,7 +40,7 @@ int64_t write_rand_xor(FILE *fp, int Nblock)
 {
 	prng_state prng;
 	struct timespec ts1, ts2;
-	syscall(SYS_getrandom, &prng.state, sizeof(prng.state), 0);
+	getrandom(&prng.state, sizeof(prng.state), 0);
 	clock_gettime(CLOCK_MONOTONIC, &ts1);
 	while(Nblock--){
 		for(int i=0;i<BUFF_SIZE/8;i++){
