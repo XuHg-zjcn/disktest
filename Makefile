@@ -1,9 +1,9 @@
 CC=gcc
 LD=gcc
-CFLAGS = -Wall -std=gnu99 -O3
+CFLAGS = -Wall -march=native -std=gnu99 -O3
 LDFLAGS = -std=gnu99
 
-INCS = -Iinclude
+INCS = -Iinclude -Ilibcrc/include -Ilibcrc/tab
 SDIR = src
 
 CSRC = $(shell find $(SDIR) -name *.c)
