@@ -32,6 +32,7 @@ int64_t write_rand_lib(FILE *fp, int Nblock)
 		fwrite(buff, 1, BUFF_SIZE, fp);
 	}
 	fflush(fp);
+	fsync(fileno(fp));
 	clock_gettime(CLOCK_MONOTONIC, &ts2);
 	return (ts2.tv_nsec-ts1.tv_nsec) + (ts2.tv_sec-ts1.tv_sec)*1000000000;
 }
@@ -49,6 +50,7 @@ int64_t write_rand_xor(FILE *fp, int Nblock)
 		fwrite(buff, 1, BUFF_SIZE, fp);
 	}
 	fflush(fp);
+	fsync(fileno(fp));
 	clock_gettime(CLOCK_MONOTONIC, &ts2);
 	return (ts2.tv_nsec-ts1.tv_nsec) + (ts2.tv_sec-ts1.tv_sec)*1000000000;
 }
