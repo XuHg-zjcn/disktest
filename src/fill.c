@@ -25,6 +25,7 @@
 #include "myrandom.h"
 
 extern uint8_t buff[BUFF_SIZE];
+extern uint64_t base;
 #define buff64 ((uint64_t *)buff)
 
 void fill_crc64_ecma(uint64_t base, uint64_t *output, uint64_t n)
@@ -99,14 +100,15 @@ uint64_t random_check(FILE *fp, uint64_t base, int Npoint, int rep)
 void check(FILE *fp, int Ncyc, int Nchk)
 {
   uint64_t errs = 0;
-  uint64_t base;
   uint64_t hashs = 0;
-  getrandom(&base, sizeof(base), 0);
-  printf("%16lx\n", base);
+  if(!base){
+    getrandom(&base, sizeof(base), 0);
+    printf("%16lx\n", base);
+  }
   for(int i=0;i<Ncyc;i++){
     fill_fp(fp, base+hashs, Nchk);
     hashs += Nchk*BUFF_SIZE/8;
-	uint64_t rerrs = random_check(fp, base, hashs/100000, 128);
+	uint64_t rerrs = random_check(fp, base, 100, 128);
 	if(rerrs != 0){
 	  printf("err\n");
 	}
