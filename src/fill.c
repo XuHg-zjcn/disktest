@@ -23,7 +23,9 @@
 #include <unistd.h>
 #include <sys/random.h>
 #include "myrandom.h"
+#include "disktest_common.h"
 
+extern testmode_t mode;
 extern uint8_t buff[BUFF_SIZE];
 extern uint64_t base;
 extern uint64_t randchk_num;
@@ -89,20 +91,21 @@ uint64_t random_check(FILE *fp, uint64_t base, int Npoint, int rep)
   uint64_t errs = 0;
   long old = ftell(fp);
   while(Npoint--){
-	long offset = uniform(old/8);
+    long offset = uniform(old/8);
     fseek(fp, offset*8, SEEK_SET);
     long rep_ = (offset+rep>old/8)?(old/8-offset):rep;
-	fread(buff, 8, rep_, fp);
-	errs += check_crc64_ecma(base+offset, buff64, rep_);
+    fread(buff, 8, rep_, fp);
+    errs += check_crc64_ecma(base+offset, buff64, rep_);
   }
   fseek(fp, old, SEEK_SET);
   return errs;
 }
 
-void check(FILE *fp, int Ncyc, int Nchk)
+//TODO: print输出错误位置
+void check_writeread(FILE *fp, int Ncyc, int Nchk)
 {
-  uint64_t errs = 0;
-  uint64_t hashs = 0;
+  uint64_t errs=0, rerrs=0;
+  uint64_t hashs=0;
   if(!base){
     getrandom(&base, sizeof(base), 0);
     printf("%16lx\n", base);
@@ -110,12 +113,38 @@ void check(FILE *fp, int Ncyc, int Nchk)
   for(int i=0;i<Ncyc;i++){
     fill_fp(fp, base+hashs, Nchk);
     hashs += Nchk*BUFF_SIZE/8;
-	uint64_t rerrs = random_check(fp, base, randchk_num, randchk_size);
-	if(rerrs != 0){
-	  printf("err\n");
-	}
+    if(mode.readrand_en){
+      uint64_t rerr = random_check(fp, base, randchk_num, randchk_size);
+      rerrs += rerr;
+      if(rerr != 0){
+	printf("rerr=%ld\n", rerrs);
+      }
+    }
   }
-  fseek(fp, 0, SEEK_SET);
-  errs = check_fp(fp, base, Nchk*Ncyc);
-  printf("check errs=%ld\n", errs);
+  if(mode.readrand_en){
+    printf("rand check rerrs=%ld\n", rerrs);
+  }
+  if(mode.readfull_en){
+    fseek(fp, 0, SEEK_SET);
+    errs = check_fp(fp, base, Nchk*Ncyc);
+    printf("full check errs=%ld\n", errs);
+  }
+}
+
+void check_readonly(FILE *fp, int Nblock)
+{
+  if(!base){
+    fprintf(stderr, "readonly mode must provide seed\n");
+    return;
+  }
+  if(mode.readrand_en){
+    fseek(fp, 0, SEEK_END);
+    uint64_t rerrs = random_check(fp, base, randchk_num, randchk_size);
+    printf("rand check rerrs=%ld\n", rerrs);
+  }
+  if(mode.readfull_en){
+    fseek(fp, 0, SEEK_SET);
+    uint64_t errs = check_fp(fp, base, Nblock);
+    printf("full check errs=%ld\n", errs);
+  }
 }

@@ -1,6 +1,6 @@
 /*
-    Fill data to test capacity
-    Copyright (C) 2022  Xu Ruijun
+    datatest common head
+    Copyright (C) 2024  Xu Ruijun
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,16 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef FILL_H
-#define FILL_H
+#ifndef DISKTEST_COMMON_H
+#define DISKTEST_COMMON_H
 
-#include <stdio.h>
-#include <stdint.h>
+#include <stdbool.h>
 
-void fill_fp(FILE *fp, uint64_t base, int Nblock);
-uint64_t check_fp(FILE *fp, uint64_t base, int Nblock);
-uint64_t random_check(FILE *fp, uint64_t base, int Npoint, int rep);
-void check_writeread(FILE *fp, int Ncyc, int Nchk);
-void check_readonly(FILE *fp, int Nblock);
+typedef struct{
+  bool write_en;
+  bool readrand_en;
+  bool readfull_en;
+  bool is_custom;
+}testmode_t;
+
+#define MIN(a, b) (((a)<(b))?(a):(b))
+#define MAX(a, b) (((a)>(b))?(a):(b))
 
 #endif
