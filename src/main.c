@@ -21,21 +21,25 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <getopt.h>
+#include <bsd/stdlib.h>
 
 #include "config.h"
 #include "speed.h"
 #include "fill.h"
 
+#define PARAM_RANDCHK_STEP	0xff01
+#define PARAM_RANDCHK_NUM	0xff02
+#define PARAM_RANDCHK_SIZE	0xff03
 
 FILE *fp;
 uint8_t buff[BUFF_SIZE];
 
-uint64_t fsize = 1073741824; //1GiB
+int64_t fsize = 1073741824; //1GiB
 uint64_t base = 0;
 bool randchk=true, fullchk=true;
-uint64_t randchk_step = 536870912; //512MiB，每写入多少数据随机检查一次
+int64_t randchk_step = 536870912; //512MiB，每写入多少数据随机检查一次
 uint64_t randchk_num = 100;  //每次随机检查抽查样本个数
-uint64_t randchk_size = 512; //抽查样本大小
+int64_t randchk_size = 512; //抽查样本大小
 
 static struct option long_options[] = {
   {"seed",         required_argument, 0,  's' },
@@ -44,9 +48,9 @@ static struct option long_options[] = {
   {"fullchk",      no_argument,       0,  'f' },
   {"no-randchk",   no_argument,       0,  'R' },
   {"no-fullchk",   no_argument,       0,  'F' },
-  {"randchk_step", required_argument, 0,  0   },
-  {"randchk_num",  required_argument, 0,  0   },
-  {"randchk_size", required_argument, 0,  0   },
+  {"randchk_step", required_argument, 0,  PARAM_RANDCHK_STEP   },
+  {"randchk_num",  required_argument, 0,  PARAM_RANDCHK_NUM    },
+  {"randchk_size", required_argument, 0,  PARAM_RANDCHK_SIZE   },
   {0,              0,                 0,  0   },
 };
 
@@ -59,7 +63,7 @@ int main(int argc, char **argv)
       break;
     }
     printf("%c", c);
-    //printf("option %s", long_options[option_index].name);
+    printf("option %s", long_options[option_index].name);
     if (optarg){
       printf(" with arg %s", optarg);
     }
@@ -69,7 +73,27 @@ int main(int argc, char **argv)
       sscanf(optarg, "%016lx", &base);
       break;
     case 'S':
-      fsize = atoll(optarg);
+      if(dehumanize_number(optarg, &fsize) == -1){
+	perror("Error param fsize");
+	return 1;
+      }
+      break;
+    case PARAM_RANDCHK_STEP:
+      if(dehumanize_number(optarg, &randchk_step)){
+	perror("Error param randchk_step");
+	return 1;
+      }
+      break;
+    case PARAM_RANDCHK_NUM:
+      randchk_num = atoll(optarg);
+      break;
+    case PARAM_RANDCHK_SIZE:
+      if(dehumanize_number(optarg, &randchk_size)){
+	perror("Error param randchk_size");
+	return 1;
+      }
+      break;
+    default:
       break;
     }
   }
