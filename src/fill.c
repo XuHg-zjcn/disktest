@@ -1,6 +1,6 @@
 /*
     Fill data to test capacity
-    Copyright (C) 2022  Xu Ruijun
+    Copyright (C) 2022-2024  Xu Ruijun
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 
 extern uint8_t buff[BUFF_SIZE];
 extern uint64_t base;
+extern uint64_t randchk_num;
+extern uint64_t randchk_size;
 #define buff64 ((uint64_t *)buff)
 
 void fill_crc64_ecma(uint64_t base, uint64_t *output, uint64_t n)
@@ -108,7 +110,7 @@ void check(FILE *fp, int Ncyc, int Nchk)
   for(int i=0;i<Ncyc;i++){
     fill_fp(fp, base+hashs, Nchk);
     hashs += Nchk*BUFF_SIZE/8;
-	uint64_t rerrs = random_check(fp, base, 100, 128);
+	uint64_t rerrs = random_check(fp, base, randchk_num, randchk_size);
 	if(rerrs != 0){
 	  printf("err\n");
 	}

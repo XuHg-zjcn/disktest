@@ -1,6 +1,6 @@
 /*
     Main program of disktest
-    Copyright (C) 2022  Xu Ruijun
+    Copyright (C) 2022-2024  Xu Ruijun
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,9 +33,9 @@ uint8_t buff[BUFF_SIZE];
 uint64_t fsize = 1073741824; //1GiB
 uint64_t base = 0;
 bool randchk=true, fullchk=true;
-uint64_t randchk_step = 536870912; //512MiB
-uint64_t randchk_num = 100;
-uint64_t randchk_size = 512;
+uint64_t randchk_step = 536870912; //512MiB，每写入多少数据随机检查一次
+uint64_t randchk_num = 100;  //每次随机检查抽查样本个数
+uint64_t randchk_size = 512; //抽查样本大小
 
 static struct option long_options[] = {
   {"seed",         required_argument, 0,  's' },
@@ -72,6 +72,13 @@ int main(int argc, char **argv)
       fsize = atoll(optarg);
       break;
     }
+  }
+  if (optind < argc) {
+    fp = fopen(argv[optind], "wb+");
+    check(fp, fsize/randchk_step, randchk_step/BUFF_SIZE);
+    fclose(fp);
+  }else{
+    printf("need output file name\n");
   }
   return 0;
 }
